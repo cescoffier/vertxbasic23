@@ -6,6 +6,11 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
+import io.vertx.ext.web.handler.sockjs.BridgeOptions;
+import io.vertx.ext.web.handler.sockjs.PermittedOptions;
+import io.vertx.ext.web.handler.sockjs.SockJSHandler;
+import io.vertx.ext.web.handler.sockjs.BridgeEventType;
+
 
 import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
 
@@ -21,6 +26,17 @@ public class HttpApplication extends AbstractVerticle {
     router.get("/api/greeting").handler(this::greeting);
     
     router.route().handler(StaticHandler.create());
+    
+    BridgeOptions options = new BridgeOptions().addOutboundPermitted(new PermittedOptions().setAddress("my-feed"));
+    
+    router.route("/eventbus/*").handler(SockJSHandler.create(vertx).bridge(options, event -> {
+      if (event.type() == BridgeEventType.SOCKET_CREATED) {
+        System.out.println("A socket was created");
+      }
+      event.complete(true);
+    }));
+    
+    
     // router.get("/*").handler(StaticHandler.create());
 
     // Create the HTTP server and pass the "accept" method to the request handler.
@@ -36,6 +52,7 @@ public class HttpApplication extends AbstractVerticle {
               future.handle(ar.mapEmpty());
             });
 
+      vertx.setPeriodic(1000, t -> vertx.eventBus().publish("my-feed", "Server Now " + new java.util.Date()));
   }
 
   private void greeting(RoutingContext rc) {
