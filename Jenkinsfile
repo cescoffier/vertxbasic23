@@ -48,6 +48,7 @@ mavenNode {
         }
       }
 
+/*
       stage('Integration Testing'){
         mavenIntegrationTest {
           environment = 'Test'
@@ -55,7 +56,7 @@ mavenNode {
           itestPattern = localItestPattern
         }
       }
-
+*/
       stage('Rollout to Stage'){
         kubernetesApply(environment: envStage)
         //stash deployments
