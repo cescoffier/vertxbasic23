@@ -16,7 +16,7 @@ import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
 
 public class HttpApplication extends AbstractVerticle {
 
-  protected static final String template = "Aloha2, %s!";
+  protected static final String template = "BonjourX, %s!";
 
   @Override
   public void start(Future<Void> future) {
@@ -24,7 +24,7 @@ public class HttpApplication extends AbstractVerticle {
     Router router = Router.router(vertx);
 
     router.get("/api/greeting").handler(this::greeting);
-    
+
     router.route().handler(StaticHandler.create());
     
     BridgeOptions options = new BridgeOptions().addOutboundPermitted(new PermittedOptions().setAddress("my-feed"));
