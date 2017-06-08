@@ -16,7 +16,7 @@ import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
 
 public class HttpApplication extends AbstractVerticle {
 
-  protected static final String template = "Howzit 27, %s!";
+  protected static final String template = "Howzit 28, %s!";
 
   @Override
   public void start(Future<Void> future) {
@@ -52,7 +52,7 @@ public class HttpApplication extends AbstractVerticle {
               future.handle(ar.mapEmpty());
             });
 
-      // vertx.setPeriodic(1000, t -> vertx.eventBus().publish("my-feed", "Server Now " + new java.util.Date()));
+      vertx.setPeriodic(1000, t -> vertx.eventBus().publish("my-feed", "Server Now " + new java.util.Date()));
   }
 
   private void greeting(RoutingContext rc) {
