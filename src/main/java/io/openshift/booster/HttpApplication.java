@@ -2,6 +2,8 @@ package io.openshift.booster;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
@@ -9,8 +11,6 @@ import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.ext.web.handler.sockjs.BridgeOptions;
 import io.vertx.ext.web.handler.sockjs.PermittedOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
-import io.vertx.ext.web.handler.sockjs.BridgeEventType;
-
 
 import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
 
@@ -24,18 +24,8 @@ public class HttpApplication extends AbstractVerticle {
     Router router = Router.router(vertx);
 
     router.get("/api/greeting").handler(this::greeting);
-
+    router.route("/eventbus/*").handler(getSockJsHandler(vertx));
     router.route().handler(StaticHandler.create());
-    
-    BridgeOptions options = new BridgeOptions().addOutboundPermitted(new PermittedOptions().setAddress("my-feed"));
-    
-    router.route("/eventbus/*").handler(SockJSHandler.create(vertx).bridge(options, event -> {
-      if (event.type() == BridgeEventType.SOCKET_CREATED) {
-        System.out.println("A socket was created");
-      }
-      event.complete(true);
-    }));
-    
     
     // router.get("/*").handler(StaticHandler.create());
 
@@ -67,5 +57,14 @@ public class HttpApplication extends AbstractVerticle {
     rc.response()
         .putHeader(CONTENT_TYPE, "application/json; charset=utf-8")
         .end(response.encodePrettily());
+  }
+
+  private static Handler<RoutingContext> getSockJsHandler(Vertx vertx) {
+    SockJSHandler sockJSHandler = SockJSHandler.create(vertx);
+    BridgeOptions options = new BridgeOptions();
+    options.addOutboundPermitted(
+        new PermittedOptions().setAddress("my-feed"));
+    sockJSHandler.bridge(options);
+    return sockJSHandler;
   }
 }
